@@ -56,7 +56,7 @@ def connect_to_server(name):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((HOST_ADDR, HOST_PORT))
-        client.send(name) # Send name to server after connecting
+        client.send(name.encode()) # Send name to server after connecting
 
         entName.config(state=tk.DISABLED)
         btnConnect.config(state=tk.DISABLED)
