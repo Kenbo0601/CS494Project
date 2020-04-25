@@ -56,7 +56,7 @@ def connect_to_server(name):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((HOST_ADDR, HOST_PORT))
-        client.send(name.encode()) # Send name to server after connecting
+        client.send(name.encode("utf-8")) # Send name to server after connecting
 
         entName.config(state=tk.DISABLED)
         btnConnect.config(state=tk.DISABLED)
@@ -84,7 +84,7 @@ def receive_message_from_server(sck, m):
         if len(texts) < 1:
             tkDisplay.insert(tk.END, from_server)
         else:
-            tkDisplay.insert(tk.END, "\n\n"+ from_server.decode())
+            tkDisplay.insert(tk.END, "\n\n"+ from_server.decode("utf-8"))
 
         tkDisplay.config(state=tk.DISABLED)
         tkDisplay.see(tk.END)
@@ -117,7 +117,7 @@ def getChatMessage(msg):
 
 
 def send_mssage_to_server(msg):
-    enc = str.encode(msg)
+    enc = str.encode(msg,"utf-8")
     client.send(enc)
     if msg == "exit":
         client.close()
