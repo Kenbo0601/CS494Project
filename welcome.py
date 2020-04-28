@@ -31,6 +31,7 @@ window = Tk()
 window.title("Welcome to the ChatAPP")
 window.geometry("300x200")
 fm = Frame(window)
+label = Label(fm,text="Hello! Enter your name!").pack(side=TOP)
 main = Button(fm, text="main", command=main_menu).pack(side=TOP)
 fm.pack()
 
