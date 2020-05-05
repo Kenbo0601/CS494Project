@@ -27,53 +27,69 @@ class Channel:
 
 
 class Server(Channel):
-    channels = {}
+    def __init__(self,name,host,port,buffersize):
+        self.name = name
+        self.clients = {}
+        self.addresses = {}
+        self.channels = {}
 
-def accept_incoming_connections():
-    """Sets up handling for incoming clients."""
-    while True:
-        client, client_address = SERVER.accept()
-        print("%s:%s has connected." % client_address)
-        client.send(bytes("Greetings from the cave! Now type your name and press enter!", "utf8"))
-        Thread(target=handle_client, args=(client,client_address,server,)).start()
+        self.buffersize = buffersize
+        self.socket = socket(AF_INET, SOCK_STREAM)
+        self.socket.bind((host,port))
 
-def handle_client(client,client_address,channel):  # Takes client socket as argument.
-    """Handles a single client connection."""
+# wrapper functions for socket
 
-    name = client.recv(BUFSIZ).decode("utf8")
-    welcome = 'Welcome %s! If you ever want to quit, type {quit} to exit.' % name
-    client.send(bytes(welcome, "utf8"))
-    msg = "%s has joined the chat!" % name
-    channel.broadcast(bytes(msg, "utf8"))
-    channel.add(client,name,client_address)
+    def listen(self,n):
+        self.socket.listen(n)
 
-    while True:
-        msg = client.recv(BUFSIZ)
-        if msg != bytes("{quit}", "utf8"):
-            channel.broadcast(msg, name+": ")
-        else:
-            client.send(bytes("{quit}", "utf8"))
-            client.close()
-            channel.remove(client)
-            channel.broadcast(bytes(" has left the chat.","utf8"),name)
-            return
+    def close(self):
+        self.socket.close()
 
+# creates a thread for each new connection
+
+    def accept_incoming_connections(self):
+        """Sets up handling for incoming clients."""
+        while True:
+            client, client_address = self.socket.accept()
+            print("%s:%s has connected." % client_address)
+            client.send(bytes("Greetings from the cave! Now type your name and press enter!", "utf8"))
+            Thread(target=self.handle_client, args=(client,client_address,)).start()
+
+# handles inbound signals from single connection
+
+    def handle_client(self,client,client_address):  # Takes client socket as argument.
+        """Handles a single client connection."""
+        name = client.recv(self.buffersize).decode("utf8")
+        welcome = 'Welcome %s! If you ever want to quit, type {quit} to exit.' % name
+        client.send(bytes(welcome, "utf8"))
+        self.add(client,name,client_address)
+        channel = None
+
+        channel = self # temporary for testing
+
+        while True:
+            msg = client.recv(self.buffersize)
+            if msg != bytes("{quit}", "utf8"):
+                if channel is not None:
+                    channel.broadcast(msg, name+": ")
+            else:
+                client.send(bytes("{quit}", "utf8"))
+                client.close()
+                if channel is not None:
+                    channel.remove(client)
+                self.remove(client)
+                return
+    
 HOST = ''
 PORT = 9009
-BUFSIZ = 1024
-ADDR = (HOST, PORT)
 
-SERVER = socket(AF_INET, SOCK_STREAM)
-SERVER.bind(ADDR)
-
-server = Server("CS494 Project")
-
+server = Server("CS494 Project",HOST,PORT,1024)
 
 if __name__ == "__main__":
-    SERVER.listen(5)
+    server.listen(5)
     print("Waiting for connection...")
-    ACCEPT_THREAD = Thread(target=accept_incoming_connections)
+    ACCEPT_THREAD = Thread(target=server.accept_incoming_connections)
     ACCEPT_THREAD.start()
     ACCEPT_THREAD.join()
-    SERVER.close()
+    server.close()
 
