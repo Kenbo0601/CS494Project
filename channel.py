@@ -83,6 +83,7 @@ class Server(Channel):
     def handle_client(self,client,client_address):  # Takes client socket as argument.
         """Handles a single client connection."""
         name = client.recv(self.buffersize).decode("utf8")
+        print(("%s:%s adopted the name: " % client_address) + name)
 #        welcome = 'Welcome %s! Type {quit} to exit.' % name
 #        client.send(bytes(welcome, "utf8"))
         self.add(client,name,client_address)
