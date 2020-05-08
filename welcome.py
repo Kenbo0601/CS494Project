@@ -1,4 +1,5 @@
 from tkinter import *
+from socket import socket, AF_INET, SOCK_STREAM
 
 
 def make_room():
@@ -32,11 +33,36 @@ window = Tk()
 window.title("Welcome to the ChatAPP")
 window.geometry("300x200")
 fm = Frame(window)
+
 userName = StringVar() #User variable
-label = Label(fm,text="Hello! Enter your name!").pack(side=TOP)
-entry = Entry(fm, textvariable=userName).pack()
-main = Button(fm, text="logIn", command=main_menu).pack(side=TOP)
+#HOST = StringVar() #IP ADDRESS
+#PORT = StringVar() #PORT
+#label = Label(fm,text="Hello! Enter your name, IP address, and PORT").pack(side=TOP)
+label1 = Label(fm,text="NAME").pack(side=TOP)
+entry1 = Entry(fm, textvariable=userName).pack()
+#label2 = Label(fm,text="HOST").pack(side=TOP)
+#entry2 = Entry(fm, textvariable=HOST).pack()
+#label3 = Label(fm,text="PORT").pack(side=TOP)
+#entry3 = Entry(fm, textvariable=PORT).pack()
+main = Button(fm, text="CONNECT", command=main_menu).pack(side=TOP)
 fm.pack()
+
+
+HOST = input('Enter host: ')
+PORT = input('Enter port: ')
+if not PORT:
+    PORT = 9009
+else:
+    PORT = int(PORT)
+
+BUFSIZ = 1024
+ADDR = (HOST, PORT)
+
+client_socket = socket(AF_INET, SOCK_STREAM)
+client_socket.connect(ADDR)
+
+#receive_thread = Thread(target=receive)
+#receive_thread.start()
 
 
 window.mainloop();
