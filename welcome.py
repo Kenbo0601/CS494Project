@@ -1,6 +1,11 @@
 from tkinter import *
 from socket import socket, AF_INET, SOCK_STREAM
 
+#Connect to the server 
+def connect_server():
+    name = userName.get()
+    client_socket.send(bytes(name, "utf8"))
+    return
 
 def make_room():
     newWindow = Toplevel(window)
@@ -44,7 +49,7 @@ entry1 = Entry(fm, textvariable=userName).pack()
 #entry2 = Entry(fm, textvariable=HOST).pack()
 #label3 = Label(fm,text="PORT").pack(side=TOP)
 #entry3 = Entry(fm, textvariable=PORT).pack()
-main = Button(fm, text="CONNECT", command=main_menu).pack(side=TOP)
+main = Button(fm, text="CONNECT", command=connect_server).pack(side=TOP)
 fm.pack()
 
 
