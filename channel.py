@@ -19,18 +19,18 @@ class Channel:
     def add(self,client,name,client_address):
         self.clients[client] = name
         self.addresses[client] = client_address
-        self.broadcast(bytes(" has joined %s." % self.name,"utf8"),self.clients[client])
+        self.broadcast(" has joined %s." % self.name,self.clients[client])
 
 # removes socket from clients list
     def remove(self,client):
-        self.broadcast(bytes(" has left %s." % self.name,"utf8"),self.clients[client])
+        self.broadcast(" has left %s." % self.name,self.clients[client])
         del self.clients[client]
         del self.addresses[client]
 
 # sends message to all sockets stored in clients list
     def broadcast(self,msg, prefix=""):
         for sock in self.clients:
-            sock.send(bytes(prefix, "utf8")+msg)
+            sock.send(bytes(prefix+msg, "utf8"))
 
 
 
@@ -62,6 +62,14 @@ class Server(Channel):
 
     def create(self,name):
         self.channels[name] = Channel(name)
+
+    def join(self,name,client):
+        channel = self.channels[name]
+        if name in self.channels:
+            channel.add(client,self.clients[client],self.addresses[client])
+            return self.channels[name]
+        else:
+            return None
 
     def shout(self,socket):
         for channel in self.channels:
@@ -95,17 +103,19 @@ class Server(Channel):
         channel = self # temporary for testing
 
         while True:
-            msg = client.recv(self.buffersize)
-            if msg != bytes("{quit}", "utf8"):
-                if channel is not None:
-                    channel.broadcast(msg, name+": ")
-            else:
+            msg = client.recv(self.buffersize).decode()
+            if msg[:6] == "{quit}":
                 client.send(bytes("{quit}", "utf8"))
                 client.close()
                 if channel is not None:
                     channel.remove(client)
                 self.remove(client)
                 return
+            elif msg[:6] == "{join}":
+                channel = self.join(msg[6:],client)
+            else:
+                if channel is not None:
+                    channel.broadcast(msg, name+": ")
     
 HOST = ''
 PORT = 9009
