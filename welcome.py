@@ -5,6 +5,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 def connect_server():
     name = userName.get()
     client_socket.send(bytes(name, "utf8"))
+    main_menu()
     return
 
 def make_room():
@@ -19,7 +20,11 @@ def make_room():
 def join_room():
     newWindow = Toplevel(window)
     newWindow.geometry("300x200")
-    lablel2 = Label(newWindow, text="JOIN A ROOM")
+    fm = Frame(newWindow)
+    testList = ["ROOM1","ROOM2","ROOM3"]  
+    for x in testList:
+        Button(fm, text=x).pack()
+    fm.pack()
 
 
 def main_menu():
