@@ -3,7 +3,7 @@
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 
-class Channel:
+class Room:
 
 # initiates name and client list
     def __init__(self,name):
@@ -23,9 +23,10 @@ class Channel:
 
 # removes socket from clients list
     def remove(self,client):
-        self.broadcast(" has left %s." % self.name,self.clients[client])
-        del self.clients[client]
-        del self.addresses[client]
+        if client in self.clients:
+            self.broadcast(" has left %s." % self.name,self.clients[client])
+            del self.clients[client]
+            del self.addresses[client]
 
 # sends message to all sockets stored in clients list
     def broadcast(self,msg, prefix=""):
@@ -34,14 +35,14 @@ class Channel:
 
 
 
-class Server(Channel):
+class Server(Room):
 
 # initiates server using input variables
     def __init__(self,name,host,port,buffersize):
         self.name = name
         self.clients = {}
         self.addresses = {}
-        self.channels = {}
+        self.rooms = {}
         self.create("test")
         self.create("another")
         self.create("magic")
@@ -61,19 +62,28 @@ class Server(Channel):
 # list management functions
 
     def create(self,name):
-        self.channels[name] = Channel(name)
+        self.rooms[name] = Room(name)
 
     def join(self,name,client):
-        channel = self.channels[name]
-        if name in self.channels:
-            channel.add(client,self.clients[client],self.addresses[client])
-            return self.channels[name]
+        if name in self.rooms:
+            room = self.rooms[name]
+            room.add(client,self.clients[client],self.addresses[client])
+            return self.rooms[name]
         else:
             return None
 
+    def drop(self,room,client):
+        if room in self.rooms:
+            self.rooms[room].remove(client)
+
+    def make(self,name):
+        if name not in self.rooms:
+            self.rooms[name] = Room(name)
+            self.broadcast(name,"{room}")   # tell everyone there is a new room
+
     def shout(self,socket):
-        for channel in self.channels:
-            msg = '{channel}%s' % channel
+        for room in self.rooms:
+            msg = '{room}%s' % room
             socket.send(bytes(msg,'utf8'))
 
 # creates a thread for each new connection
@@ -95,27 +105,29 @@ class Server(Channel):
 #        welcome = 'Welcome %s! Type {quit} to exit.' % name
 #        client.send(bytes(welcome, "utf8"))
         self.add(client,name,client_address)
-        channel = None
+        room = None
 
         # sends list of rooms to client
         self.shout(client)
-
-        channel = self # temporary for testing
 
         while True:
             msg = client.recv(self.buffersize).decode()
             if msg[:6] == "{quit}":
                 client.send(bytes("{quit}", "utf8"))
                 client.close()
-                if channel is not None:
-                    channel.remove(client)
+                if room is not None:
+                    room.remove(client)
                 self.remove(client)
                 return
             elif msg[:6] == "{join}":
-                channel = self.join(msg[6:],client)
+                room = self.join(msg[6:],client)
+            elif msg[:6] == "{drop}":
+                self.drop(msg[6:],client)
+            elif msg[:6] == "{make}":
+                self.make(msg[6:])
             else:
-                if channel is not None:
-                    channel.broadcast(msg, name+": ")
+                if room is not None:
+                    room.broadcast(msg, name+": ")
     
 HOST = ''
 PORT = 9009
