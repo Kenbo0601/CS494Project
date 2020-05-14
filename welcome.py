@@ -1,12 +1,30 @@
 from tkinter import *
 from socket import socket, AF_INET, SOCK_STREAM
+from threading import Thread
 
+msg = ''
+room = []
 #Connect to the server 
 def connect_server():
     name = userName.get()
     client_socket.send(bytes(name, "utf8"))
     main_menu()
     return
+
+def receive():
+    """Handles receiving of messages."""
+    while True:
+        try:
+            msg = client_socket.recvmsg(BUFSIZ).decode("utf8")
+            print(msg)
+            if msg[:6] == '{room}':
+                for x in msg[7:]: # oom}[ -> from here
+                    if x == ']':
+                        size = int(msg[7:x])
+                        msg = msg[x:]
+                        room.append(msg[:size])
+        except OSError:  # Possibly client has left the chat.
+            break
 
 def make_room():
     newWindow = Toplevel(window)
@@ -18,11 +36,14 @@ def make_room():
     fm.pack(fill=BOTH)
 
 def join_room():
+    for x in room:
+        print(x + '\n')
     newWindow = Toplevel(window)
     newWindow.geometry("300x200")
     fm = Frame(newWindow)
-    testList = ["ROOM1","ROOM2","ROOM3"]  
-    for x in testList:
+
+    client_socket.send(bytes("{room}", "utf8"))
+    for x in room:
         Button(fm, text=x).pack()
     fm.pack()
 
@@ -71,8 +92,8 @@ ADDR = (HOST, PORT)
 client_socket = socket(AF_INET, SOCK_STREAM)
 client_socket.connect(ADDR)
 
-#receive_thread = Thread(target=receive)
-#receive_thread.start()
+receive_thread = Thread(target=receive)
+receive_thread.start()
 
 
 window.mainloop();
