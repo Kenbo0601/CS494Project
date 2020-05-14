@@ -31,7 +31,7 @@ class Room:
 # sends message to all sockets stored in clients list
     def broadcast(self,msg, prefix=""):
         for sock in self.clients:
-            sock.send(bytes(prefix+msg, "utf8"))
+            sock.send(bytes(prefix+'['+str(len(msg))+']'+msg, "utf8"))
 
 
 
@@ -83,7 +83,7 @@ class Server(Room):
 
     def shout(self,socket):
         for room in self.rooms:
-            msg = '{room}%s' % room
+            msg = '{room}['+str(len(room))+']'+room
             socket.send(bytes(msg,'utf8'))
 
 # creates a thread for each new connection
