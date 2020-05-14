@@ -12,6 +12,9 @@ def connect_server():
     main_menu()
     return
 
+def send():
+    return
+
 def receive():
     """Handles receiving of messages."""
     while True:
@@ -27,6 +30,31 @@ def receive():
         except OSError:  # Possibly client has left the chat.
             break
 
+#main chat screen
+def chat_screen():
+    top = Toplevel(window)
+    top.title("Chatter")
+
+    messages_frame = Frame(top)
+    my_msg = StringVar()  # For the messages to be sent.
+    my_msg.set("Type your messages here.")
+    scrollbar = Scrollbar(messages_frame)  # To navigate through past messages.
+    # Following will contain the messages.
+    msg_list = Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    msg_list.pack(side=LEFT, fill=BOTH)
+    msg_list.pack()
+    messages_frame.pack()
+
+    entry_field = Entry(top, textvariable=my_msg)
+    entry_field.bind("<Return>", send)
+    entry_field.pack()
+    send_button = Button(top, text="Send", command=send)
+    send_button.pack()
+
+    #top.protocol("WM_DELETE_WINDOW", on_closing)
+    return
+
 
 def make_room():
     newWindow = Toplevel(window)
@@ -36,9 +64,18 @@ def make_room():
 
     back_main = Button(fm, text="Main menu", command=main_menu).pack(side=TOP)
     fm.pack(fill=BOTH)
+    return
 
 #join rooms function
 def join_room():
+
+    '''inner function'''
+    def connect_room():
+        name = roomName.get() #get rooms name
+        client_socket.send(bytes("{join}"+name, "utf8"))
+        chat_screen() #call chat_screen 
+        return
+
     newWindow = Toplevel(window)
     newWindow.geometry("300x200")
     fm = Frame(newWindow)
@@ -52,12 +89,9 @@ def join_room():
         print(x) #for debugging
     
     entry = Entry(fm, textvariable=roomName).pack()
-    join = Button(fm, text="JOIN", command=connect_room).pack(side=TOP)
+    join = Button(fm, text="JOIN", command=connect_room).pack(side=TOP) #connect_room gets called when client clicked the button
     fm.pack()
 
-
-def connect_room():
-    name = roomName.get() #get rooms name
     return
 
 
@@ -71,6 +105,7 @@ def main_menu():
     makeRoom = Button(fm,text='JOIN A ROOM', command=join_room).pack(side=TOP,expand=YES)
     makeRoom = Button(fm,text='LEAVE', command=quit).pack(side=TOP,expand=YES)
     fm.pack(fill=BOTH)
+    return
 
 
 window = Tk()
