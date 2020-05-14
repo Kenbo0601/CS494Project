@@ -1,10 +1,11 @@
 from tkinter import *
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
+import time
 
 msg = ''
 room = []
-#Connect to the server 
+#Connect to the server
 def connect_server():
     name = userName.get()
     client_socket.send(bytes(name, "utf8"))
@@ -16,7 +17,7 @@ def receive():
     while True:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
-            #print(msg)
+            print(msg)
             if msg[:6] == '{room}':
                 tmp = msg[6:-1] #cutting {room} + the last ','
                 rm = tmp.split(',') #split rooms by , and by using split, it stores strings into a list by default
@@ -25,6 +26,7 @@ def receive():
                         room.append(x)
         except OSError:  # Possibly client has left the chat.
             break
+
 
 def make_room():
     newWindow = Toplevel(window)
@@ -35,18 +37,28 @@ def make_room():
     back_main = Button(fm, text="Main menu", command=main_menu).pack(side=TOP)
     fm.pack(fill=BOTH)
 
+#join rooms function
 def join_room():
-    for x in room:
-        print(x + '\n')
     newWindow = Toplevel(window)
     newWindow.geometry("300x200")
     fm = Frame(newWindow)
 
-    client_socket.send(bytes("{room}", "utf8"))
+    client_socket.send(bytes("{room}", "utf8")) #request the server to send the client the list of rooms
+    time.sleep(2) #wait for 2 seconds to receive the info
+    count = 0
     for x in room:
-        Button(fm, text=x).pack()
+        count += 1
+        Label(fm, text=str(count) + ": " + x).pack()
         print(x) #for debugging
+    
+    entry = Entry(fm, textvariable=roomName).pack()
+    join = Button(fm, text="JOIN", command=connect_room).pack(side=TOP)
     fm.pack()
+
+
+def connect_room():
+    name = roomName.get() #get rooms name
+    return
 
 
 def main_menu():
@@ -62,11 +74,12 @@ def main_menu():
 
 
 window = Tk()
-window.title("Welcome to the ChatAPP")
+window.title("CS494_PROJECT")
 window.geometry("300x200")
 fm = Frame(window)
 
 userName = StringVar() #User variable
+roomName = StringVar() #specific room name
 #HOST = StringVar() #IP ADDRESS
 #PORT = StringVar() #PORT
 #label = Label(fm,text="Hello! Enter your name, IP address, and PORT").pack(side=TOP)

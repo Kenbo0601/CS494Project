@@ -84,11 +84,11 @@ class Server(Room):
 
     def shout(self,socket):
         msg = '{room}'
-        #socket.send(bytes(msg,'utf8'))
+        socket.send(bytes(msg,'utf8'))
         for room in self.rooms:
             #msg = '{room}['+str(len(room))+']'+room
-            msg += room + ','
-        socket.send(bytes(msg,'utf8')) #sending just room names 
+            room += ','
+            socket.send(bytes(room,'utf8')) #sending just room names
 
 # creates a thread for each new connection
 
@@ -134,7 +134,7 @@ class Server(Room):
             else:
                 if room is not None:
                     room.broadcast(msg, name+": ")
-    
+
 HOST = ''
 PORT = 9009
 
