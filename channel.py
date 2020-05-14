@@ -125,6 +125,8 @@ class Server(Room):
                 self.drop(msg[6:],client)
             elif msg[:6] == "{make}":
                 self.make(msg[6:])
+            elif msg[:6] == "{room}":
+                self.shout(client)
             else:
                 if room is not None:
                     room.broadcast(msg, name+": ")
