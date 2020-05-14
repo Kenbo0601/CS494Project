@@ -31,7 +31,8 @@ class Room:
 # sends message to all sockets stored in clients list
     def broadcast(self,msg, prefix=""):
         for sock in self.clients:
-            sock.send(bytes(prefix+'['+str(len(msg))+']'+msg, "utf8"))
+            #sock.send(bytes(prefix+'['+str(len(msg))+']'+*/msg, "utf8"))
+            sock.send(bytes(prefix+msg, "utf8"))
 
 
 
@@ -43,9 +44,9 @@ class Server(Room):
         self.clients = {}
         self.addresses = {}
         self.rooms = {}
-        self.create("test,")
-        self.create("another,")
-        self.create("magic,")
+        self.create("test")
+        self.create("another")
+        self.create("magic")
 
         self.buffersize = buffersize
         self.socket = socket(AF_INET, SOCK_STREAM)
@@ -79,14 +80,15 @@ class Server(Room):
     def make(self,name):
         if name not in self.rooms:
             self.rooms[name] = Room(name)
-            self.broadcast(name,"{room}")   # tell everyone there is a new room
+            self.broadcast(name+',',"{room}")   # tell everyone there is a new room
 
     def shout(self,socket):
         msg = '{room}'
-        socket.send(bytes(msg,'utf8'))
+        #socket.send(bytes(msg,'utf8'))
         for room in self.rooms:
             #msg = '{room}['+str(len(room))+']'+room
-            socket.send(bytes(room,'utf8')) #sending just room names 
+            msg += room + ','
+        socket.send(bytes(msg,'utf8')) #sending just room names 
 
 # creates a thread for each new connection
 
