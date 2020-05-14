@@ -15,14 +15,14 @@ def receive():
     """Handles receiving of messages."""
     while True:
         try:
-            msg = client_socket.recvmsg(BUFSIZ).decode("utf8")
-            print(msg)
+            msg = client_socket.recv(BUFSIZ).decode("utf8")
+            #print(msg)
             if msg[:6] == '{room}':
-                for x in msg[7:]: # oom}[ -> from here
-                    if x == ']':
-                        size = int(msg[7:x])
-                        msg = msg[x:]
-                        room.append(msg[:size])
+                tmp = msg[6:-1] #cutting {room} + the last ','
+                rm = tmp.split(',') #split rooms by , and by using split, it stores strings into a list by default
+                for x in rm:
+                    if not x in room: #without this, it duplicates rooms
+                        room.append(x)
         except OSError:  # Possibly client has left the chat.
             break
 
@@ -45,6 +45,7 @@ def join_room():
     client_socket.send(bytes("{room}", "utf8"))
     for x in room:
         Button(fm, text=x).pack()
+        print(x) #for debugging
     fm.pack()
 
 
