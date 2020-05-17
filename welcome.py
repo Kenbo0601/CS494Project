@@ -3,16 +3,12 @@ from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 import time
 
-msg = ''
-room = []
+
 #Connect to the server
 def connect_server():
     name = userName.get()
     client_socket.send(bytes(name, "utf8"))
     main_menu()
-    return
-
-def send():
     return
 
 def receive():
@@ -27,32 +23,24 @@ def receive():
                 for x in rm:
                     if not x in room: #without this, it duplicates rooms
                         room.append(x)
+            else:
+                msg_list.insert(END,msg)
         except OSError:  # Possibly client has left the chat.
             break
 
+def send(event=None):  # event is passed by binders.
+    """Handles sending of messages."""
+    msg = my_msg.get()
+    my_msg.set("")  # Clears input field.
+    client_socket.send(bytes(msg, "utf8"))
+    if msg == "{quit}":
+        client_socket.close()
+        top.quit()
+
 #main chat screen
 def chat_screen():
-    top = Toplevel(window)
-    top.title("Chatter")
-
-    messages_frame = Frame(top)
-    my_msg = StringVar()  # For the messages to be sent.
-    my_msg.set("Type your messages here.")
-    scrollbar = Scrollbar(messages_frame)  # To navigate through past messages.
-    # Following will contain the messages.
-    msg_list = Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
-    scrollbar.pack(side=RIGHT, fill=Y)
-    msg_list.pack(side=LEFT, fill=BOTH)
-    msg_list.pack()
-    messages_frame.pack()
-
-    entry_field = Entry(top, textvariable=my_msg)
-    entry_field.bind("<Return>", send)
-    entry_field.pack()
-    send_button = Button(top, text="Send", command=send)
-    send_button.pack()
-
-    #top.protocol("WM_DELETE_WINDOW", on_closing)
+    #now the chat screen is visible 
+    top.deiconify() 
     return
 
 
@@ -113,6 +101,9 @@ window.title("CS494_PROJECT")
 window.geometry("300x200")
 fm = Frame(window)
 
+msg = ''
+room = []
+msg_list = None
 userName = StringVar() #User variable
 roomName = StringVar() #specific room name
 #HOST = StringVar() #IP ADDRESS
@@ -126,6 +117,29 @@ entry1 = Entry(fm, textvariable=userName).pack()
 #entry3 = Entry(fm, textvariable=PORT).pack()
 main = Button(fm, text="CONNECT", command=connect_server).pack(side=TOP)
 fm.pack()
+
+'''Main chat screen'''
+top = Toplevel(window)
+top.title("Chatter")
+my_msg = StringVar() 
+messages_frame = Frame(top)
+my_msg = StringVar()  # For the messages to be sent.
+my_msg.set("Type your messages here.")
+scrollbar = Scrollbar(messages_frame)  # To navigate through past messages.
+# Following will contain the messages.
+msg_list = Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
+scrollbar.pack(side=RIGHT, fill=Y)
+msg_list.pack(side=LEFT, fill=BOTH)
+msg_list.pack()
+messages_frame.pack()
+
+entry_field = Entry(top, textvariable=my_msg)
+entry_field.bind("<Return>", send)
+entry_field.pack()
+send_button = Button(top, text="Send", command=send)
+send_button.pack()
+#top.protocol("WM_DELETE_WINDOW", on_closing)
+top.withdraw() #hide the chat screen
 
 
 HOST = input('Enter host: ')
