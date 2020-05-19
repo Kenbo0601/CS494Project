@@ -27,7 +27,8 @@ def receive():
             rm = tmp.split(',') #split rooms by , and by using split, it stores strings into a list by default
             for x in rm:
                 if not x in room: #without this, it duplicates rooms
-                    room.append(x)
+                    if len(x) > 0:
+                        room.append(x)
         elif msg[:6] == '{exit}':
             client_socket.close()
             window.quit()
