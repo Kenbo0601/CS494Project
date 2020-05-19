@@ -56,7 +56,6 @@ def make_room():
 
 #join rooms function
 def join_room():
-
     '''inner function'''
     def connect_room():
         name = roomName.get() #get rooms name
@@ -82,20 +81,19 @@ def join_room():
     entry = Entry(fm, textvariable=roomName).pack()
     join = Button(fm, text="JOIN", command=connect_room).pack(side=TOP) #connect_room gets called when client clicked the button
     fm.pack()
-
     return
 
+#Main Chat screen
 def chat_screen():
-    #now the chat screen is visible 
     msg_list.delete(0,END)  #clear all the messages 
-    top.deiconify() 
+    top.deiconify()  #now the screen is visible
     return
 
 #leave the current room
 def leave_room():
    client_socket.send(bytes("{quit}","utf8"))
    msg_list.delete(0,END)  #clear all the messages 
-   top.withdraw()
+   top.withdraw() #now the screen is invisible
    return
 
 def quit_chatApp():
@@ -182,7 +180,4 @@ quit_button.pack()
 top.withdraw() #hide the chat screen
 
 window.mainloop()
-
-
-
 
