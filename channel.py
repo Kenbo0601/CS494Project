@@ -30,6 +30,7 @@ class Room:
 
 # sends message to all sockets stored in clients list
     def broadcast(self,msg, prefix=""):
+        print("Broadcasting from room \'%s\'" % self.name)
         for sock in self.clients:
             #sock.send(bytes(prefix+'['+str(len(msg))+']'+*/msg, "utf8"))
             sock.send(bytes(prefix+msg, "utf8"))
@@ -44,9 +45,9 @@ class Server(Room):
         self.clients = {}
         self.addresses = {}
         self.rooms = {}
-        self.create("test")
-        self.create("another")
-        self.create("magic")
+        self.make("test")
+        self.make("another")
+        self.make("magic")
 
         self.buffersize = buffersize
         self.socket = socket(AF_INET, SOCK_STREAM)
@@ -61,9 +62,6 @@ class Server(Room):
         self.socket.close()
 
 # list management functions
-
-    def create(self,name):
-        self.rooms[name] = Room(name)
 
     def join(self,name,client):
         if name in self.rooms:
@@ -80,15 +78,20 @@ class Server(Room):
     def make(self,name):
         if name not in self.rooms:
             self.rooms[name] = Room(name)
-            self.broadcast(name+',',"{room}")   # tell everyone there is a new room
+            print("Created room \'%s\'" % name)
+        else:
+            print("\'%s\' already exists" % name)
 
     def shout(self,socket):
+        #message header
         msg = '{room}'
-        socket.send(bytes(msg,'utf8'))
+        #socket.send(bytes(msg,'utf8'))
+        #assembles list of rooms seperated by commas
         for room in self.rooms:
             #msg = '{room}['+str(len(room))+']'+room
-            room += ','
-            socket.send(bytes(room,'utf8')) #sending just room names
+            msg += room + ','
+        #sends entire message as one block
+        socket.send(bytes(msg,'utf8')) #sending just room names
 
 # creates a thread for each new connection
 
@@ -105,31 +108,38 @@ class Server(Room):
     def handle_client(self,client,client_address):  # Takes client socket as argument.
         """Handles a single client connection."""
         name = client.recv(self.buffersize).decode("utf8")
-        print(("%s:%s adopted the name: " % client_address) + name)
+        print(("%s:%s adopted the name " % client_address) + '\'' + name + '\'')
 #        welcome = 'Welcome %s! Type {quit} to exit.' % name
 #        client.send(bytes(welcome, "utf8"))
         self.add(client,name,client_address)
         room = None
 
         # sends list of rooms to client
-        self.shout(client)
+        # self.shout(client)
 
         while True:
             msg = client.recv(self.buffersize).decode()
+            print(("Recieved \'%s\' from " % msg) + name)
             if msg[:6] == "{quit}": #client just left the room
                 #client.send(bytes("{quit}", "utf8"))
                 #client.close() //don't want to close the connection, just leave the room
                 if room is not None:
+                    print("\'%s\' left room \'%s\'" % (name, room.name) )
                     room.remove(client)
                 #self.remove(client)
                 #return //dont wanna get out of this loop
             elif msg[:6] == "{join}":
                 room = self.join(msg[6:],client)
+                if room is not None:
+                    print("\'%s\' joined room \'%s\'" % (name, room.name) )
+                else:
+                    print("No room named \'%s\'" % msg[6:])
             elif msg[:6] == "{drop}":
                 self.drop(msg[6:],client)
             elif msg[:6] == "{make}":
                 self.make(msg[6:])
             elif msg[:6] == "{room}":
+                print("Sending room list to \'%s\'" % name)
                 self.shout(client)
             elif msg[:6] == "{exit}": #client leaves the server, close the connection
                 client.send(bytes("{exit}", "utf8"))
