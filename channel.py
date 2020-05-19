@@ -12,7 +12,7 @@ class Room:
         self.addresses = {}
 
 # helper get function
-    def name():
+    def name(self):
         return self.name
 
 # adds socket to client list
@@ -116,13 +116,13 @@ class Server(Room):
 
         while True:
             msg = client.recv(self.buffersize).decode()
-            if msg[:6] == "{quit}":
-                client.send(bytes("{quit}", "utf8"))
-                client.close()
+            if msg[:6] == "{quit}": #client just left the room
+                #client.send(bytes("{quit}", "utf8"))
+                #client.close() //don't want to close the connection, just leave the room
                 if room is not None:
                     room.remove(client)
-                self.remove(client)
-                return
+                #self.remove(client)
+                #return //dont wanna get out of this loop
             elif msg[:6] == "{join}":
                 room = self.join(msg[6:],client)
             elif msg[:6] == "{drop}":
@@ -131,12 +131,16 @@ class Server(Room):
                 self.make(msg[6:])
             elif msg[:6] == "{room}":
                 self.shout(client)
+            elif msg[:6] == "{exit}": #client leaves the server, close the connection
+                client.send(bytes("{exit}", "utf8"))
+                client.close()
+                self.remove(client)
             else:
                 if room is not None:
                     room.broadcast(msg, name+": ")
 
 HOST = ''
-PORT = 9009
+PORT = 1000
 
 server = Server("CS494 Project",HOST,PORT,1024)
 
