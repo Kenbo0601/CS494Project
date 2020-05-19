@@ -133,14 +133,17 @@ class Server(Room):
                 self.shout(client)
             elif msg[:6] == "{exit}": #client leaves the server, close the connection
                 client.send(bytes("{exit}", "utf8"))
-                client.close()
                 self.remove(client)
+                for room in self.rooms:
+                    self.drop(room,client)
+                client.close()
+                return
             else:
                 if room is not None:
                     room.broadcast(msg, name+": ")
 
 HOST = ''
-PORT = 1000
+PORT = 9009
 
 server = Server("CS494 Project",HOST,PORT,1024)
 
