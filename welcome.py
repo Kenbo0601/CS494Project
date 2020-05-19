@@ -2,6 +2,7 @@ from tkinter import *
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
 import time
+import tkinter.messagebox
 
 msg = ''
 room = []
@@ -59,9 +60,12 @@ def join_room():
     '''inner function'''
     def connect_room():
         name = roomName.get() #get rooms name
-        client_socket.send(bytes("{join}"+name, "utf8"))
-        chat_screen() #call chat_screen 
-        newWindow.destroy() #close the current window
+        if name not in room:
+            tkinter.messagebox.showerror("Error", "The room does not exit, please try again.")
+        else:
+            client_socket.send(bytes("{join}"+name, "utf8"))
+            chat_screen() #call chat_screen 
+            newWindow.destroy() #close the current window
         return
 
     newWindow = Toplevel(window)
