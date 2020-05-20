@@ -47,11 +47,31 @@ def send(event=None):  # event is passed by binders.
     return
 
 def make_room():
+    #inner function
+    def make():
+        name = new_room.get()
+        if len(name) == 0:
+            tkinter.messagebox.showerror("Error", "Invalid Input. Try Again")
+            new_room.set("")
+        elif name in room:
+            tkinter.messagebox.showerror("Error", "This room already exists.") 
+            new_room.set("")
+        else:
+            tkinter.messagebox.showinfo("Success", "The room " + name + " has been created.")
+            client_socket.send(bytes("{make}"+name, "utf8")) 
+            new_room.set("") #clear the input
+            newWindow.destroy()
+        return
+
     newWindow = Toplevel(window)
-    newWindow.geometry("300x200")
+    newWindow.geometry("300x100")
     lablel = Label(newWindow, text="MAKE A ROOM")
     fm = Frame(newWindow)
     fm.pack(fill=BOTH)
+
+    label = Label(fm,text="Let's Create A New Room!").pack(side=TOP)
+    entry = Entry(fm, textvariable=new_room).pack()
+    join = Button(fm, text="MAKE", command=make).pack(side=TOP) 
     return
 
 #join rooms function
@@ -60,24 +80,28 @@ def join_room():
     def connect_room():
         name = roomName.get() #get rooms name
         if name not in room:
-            tkinter.messagebox.showerror("Error", "The room does not exit, please try again.")
+            tkinter.messagebox.showerror("Error", "This room does not exist, please try again.")
         else:
             client_socket.send(bytes("{join}"+name, "utf8"))
             chat_screen() #call chat_screen 
+            roomName.set("") #clear the input
             newWindow.destroy() #close the current window
         return
 
     newWindow = Toplevel(window)
-    newWindow.geometry("300x200")
+    newWindow.geometry("300x230")
     fm = Frame(newWindow)
+    myList= Listbox(fm, yscrollcommand=scrollbar.set)
 
     client_socket.send(bytes("{room}", "utf8")) #request the server to send the client the list of rooms
     time.sleep(2) #wait for 2 seconds to receive the info
     count = 0
     for x in room:
         count += 1
-        Label(fm, text=str(count) + ": " + x, fg="blue", font=(None, 20)).pack()
-    
+        myList.insert(END, str(count) + ": " + x)
+        #Label(fm, text=str(count) + ": " + x, fg="blue", font=(None, 20)).pack()
+
+    myList.pack(side=TOP,fill=BOTH)
     entry = Entry(fm, textvariable=roomName).pack()
     join = Button(fm, text="JOIN", command=connect_room).pack(side=TOP) #connect_room gets called when client clicked the button
     fm.pack()
@@ -96,13 +120,14 @@ def leave_room():
    top.withdraw() #now the screen is invisible
    return
 
+#leave the app
 def quit_chatApp():
     client_socket.send(bytes("{exit}","utf8"))
     return
 
 def main_menu():
     newWindow = Toplevel(window)
-    newWindow.geometry("300x200")
+    newWindow.geometry("350x150")
     fm = Frame(newWindow)
     label = Label(fm,text="***** MENU *****").pack(side=TOP)
     label2 = Label(fm,text="Hi," + str(userName.get()) + ". What would you like to do?").pack()
@@ -121,6 +146,7 @@ fm = Frame(window)
 
 userName = StringVar() #User variable
 roomName = StringVar() #specific room name
+new_room = StringVar() #new room's name
 HOST = StringVar() #IP ADDRESS
 PORT = IntVar() #PORT
 PORT.set("")
@@ -156,14 +182,14 @@ fm.pack()
 
 '''--------------- Main chat screen ---------------------'''
 top = Toplevel(window)
-top.title("Chatter")
+top.title("ChatRoom")
 my_msg = StringVar() 
 messages_frame = Frame(top)
 my_msg = StringVar()  # For the messages to be sent.
 my_msg.set("Type your messages here.")
 scrollbar = Scrollbar(messages_frame)  # To navigate through past messages.
 # Following will contain the messages.
-msg_list = Listbox(messages_frame, height=15, width=50, yscrollcommand=scrollbar.set)
+msg_list = Listbox(messages_frame, height=30, width=70, yscrollcommand=scrollbar.set)
 scrollbar.pack(side=RIGHT, fill=Y)
 msg_list.pack(side=LEFT, fill=BOTH)
 msg_list.pack()
