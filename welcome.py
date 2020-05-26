@@ -15,6 +15,7 @@ def connect_server():
     name = userName.get()
     client_socket.send(bytes(name, "utf8"))
     main_menu()
+    logIn.config(state=DISABLED)
     return
 
 def receive():
@@ -147,6 +148,7 @@ fm = Frame(window)
 userName = StringVar() #User variable
 roomName = StringVar() #specific room name
 new_room = StringVar() #new room's name
+disable = False
 HOST = StringVar() #IP ADDRESS
 PORT = IntVar() #PORT
 PORT.set("")
@@ -169,7 +171,8 @@ def nameEntry():
     welcome = Label(fm, text="Connection successful! Enter your name", fg="red").pack()
     label1 = Label(fm,text="NAME").pack(side=TOP)
     entry1 = Entry(fm, textvariable=userName).pack()
-    main = Button(fm, text="LogIn", command=connect_server).pack(side=TOP)
+    #logIn = Button(fm, text="LogIn", command=connect_server).pack(side=TOP)
+    logIn.pack(side=TOP)
     return
 
 '''---------------host,port screen----------------------'''
@@ -178,6 +181,7 @@ entry2 = Entry(fm, textvariable=HOST).pack()
 label3 = Label(fm,text="PORT").pack(side=TOP)
 entry3 = Entry(fm, textvariable=PORT).pack()
 connect = Button(fm, text="CONNECT", highlightthickness=0, command=lambda : begin(HOST,PORT)).pack()
+logIn = Button(fm, text="LogIn", command=connect_server)
 fm.pack()
 
 '''--------------- Main chat screen ---------------------'''
