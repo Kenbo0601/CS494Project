@@ -61,6 +61,11 @@ class Server(Room):
     def close(self):
         self.socket.close()
 
+# adds socket to client list
+    def add(self,client,name,client_address):
+        self.clients[client] = name
+        self.addresses[client] = client_address
+
 # list management functions
 
     def join(self,name,client):
