@@ -168,7 +168,6 @@ def begin(HOST,PORT):
 
 '''--------- this screen appears after connecting to the server---------'''
 def nameEntry():
-    connect.config(state=DISABLED)
     welcome = Label(fm, text="Connection successful! Enter your name", fg="red").pack()
     label1 = Label(fm,text="NAME").pack(side=TOP)
     entry1 = Entry(fm, textvariable=userName).pack()
