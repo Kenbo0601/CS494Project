@@ -66,6 +66,12 @@ class Server(Room):
         self.clients[client] = name
         self.addresses[client] = client_address
 
+# removes socket from clients list
+    def remove(self,client):
+        if client in self.clients:
+            del self.clients[client]
+            del self.addresses[client]
+
 # list management functions
 
     def join(self,name,client):
