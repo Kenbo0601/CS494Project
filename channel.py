@@ -35,6 +35,15 @@ class Room:
             #sock.send(bytes(prefix+'['+str(len(msg))+']'+*/msg, "utf8"))
             sock.send(bytes(prefix+msg, "utf8"))
 
+# sends list of members in room
+    def list(self,socket):
+        #message header
+        msg = '{memb}'
+        #assembles list of rooms seperated by commas
+        for client in self.clients:
+            msg += self.clients[client] + ','
+        #sends entire message as one block
+        socket.send(bytes(msg,'utf8')) #sending just room names
 
 
 class Server(Room):
@@ -96,10 +105,8 @@ class Server(Room):
     def shout(self,socket):
         #message header
         msg = '{room}'
-        #socket.send(bytes(msg,'utf8'))
         #assembles list of rooms seperated by commas
         for room in self.rooms:
-            #msg = '{room}['+str(len(room))+']'+room
             msg += room + ','
         #sends entire message as one block
         socket.send(bytes(msg,'utf8')) #sending just room names
@@ -152,6 +159,12 @@ class Server(Room):
             elif msg[:6] == "{room}":
                 print("Sending room list to \'%s\'" % name)
                 self.shout(client)
+            elif msg[:6] == "{memb}":
+                if room is not None:
+                    print("Sending room clients list to \'%s\'" % name)
+                    room.list(client)
+                else:
+                    print("%s is not in a room" % name)
             elif msg[:6] == "{exit}": #client leaves the server, close the connection
                 client.send(bytes("{exit}", "utf8"))
                 self.remove(client)
