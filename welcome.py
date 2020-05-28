@@ -1,5 +1,5 @@
 from tkinter import *
-from socket import socket, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM, error
 from threading import Thread
 import time
 import tkinter.messagebox
@@ -21,8 +21,11 @@ def connect_server():
 def receive():
     """Handles receiving of messages."""
     while True:
-        #try:
-        msg = client_socket.recv(BUFSIZ).decode("utf8")
+        try:
+            msg = client_socket.recv(BUFSIZ).decode("utf8")
+        except IOError:
+            print("Error receiving data")
+            sys.exit(1)
         print(msg)
         if msg[:6] == '{room}':
             tmp = msg[6:-1] #cutting {room} + the last ','
@@ -31,20 +34,27 @@ def receive():
                 if not x in room: #without this, it duplicates rooms
                     if len(x) > 0:
                         room.append(x)
+        elif msg[:6] == '{memb}':
+            tmp = msg[6:-1]
+            msg_list.insert(END," ----- Member List ----- ")
+            msg_list.insert(END,tmp)
         elif msg[:6] == '{exit}':
             client_socket.close()
             window.quit()
             break
         else:
             msg_list.insert(END,msg)
-        #except OSError:  # Possibly client has left the chat.
-            #break
+
 
 def send(event=None):  # event is passed by binders.
     """Handles sending of messages."""
     msg = my_msg.get()
     my_msg.set("")  # Clears input field.
-    client_socket.send(bytes(msg, "utf8"))
+    try:
+        client_socket.send(bytes(msg, "utf8"))
+    except error:
+        print("Error sending data")
+        sys.exit(1)
     return
 
 def make_room():
@@ -114,6 +124,10 @@ def chat_screen():
     top.deiconify()  #now the screen is visible
     return
 
+def member_list():
+    client_socket.send(bytes("{memb}","utf8"))
+    return
+
 #leave the current room
 def leave_room():
    client_socket.send(bytes("{quit}","utf8"))
@@ -160,7 +174,12 @@ def begin(HOST,PORT):
     host = HOST.get()
     ADDR = (host, port)
 
-    client_socket.connect(ADDR)
+    try:
+        client_socket.connect(ADDR)
+    except error:
+        print("Error creating socket connection")
+        sys.exit(1)
+
     receive_thread = Thread(target=receive)
     receive_thread.start()
     nameEntry()
@@ -203,8 +222,10 @@ entry_field = Entry(top, textvariable=my_msg)
 entry_field.bind("<Return>", send)
 entry_field.pack()
 send_button = Button(top, text="Send", command=send)
+member = Button(top, text="MemberList",command=member_list)
 quit_button = Button(top, text="Leave", command=leave_room)
 send_button.pack()
+member.pack()
 quit_button.pack()
 #top.protocol("WM_DELETE_WINDOW", on_closing)
 top.withdraw() #hide the chat screen
