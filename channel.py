@@ -172,10 +172,10 @@ class Server(Room):
                     print("%s is not in a room" % name)
             elif msg[:6] == "{priv}":
 # doesnt work yet!
-                i = msg[6:].index('}')
-                target = msg[6:i] # should extract who message should go to
-                print(msg[6:i+1]) # should print out target
-                msg = msg[:7] + self.clients[client] + msg[i:] # swap client and target names in message
+                i = msg[7:].index('}')
+                target = msg[6:i+6] # should extract who message should go to
+                print(msg[7:i+7]) # should print out target
+                msg = msg[:7] + self.clients[client] + msg[i+7:] # swap client and target names in message
                 print(msg) # should print out message with swapped target and client names
                 self.whisper(target,msg) # send message to target
             elif msg[:6] == "{exit}": #client leaves the server, close the connection
@@ -190,7 +190,7 @@ class Server(Room):
                     room.broadcast(msg, name+": ")
 
 HOST = ''
-PORT = 9009
+PORT = 9000
 
 server = Server("CS494 Project",HOST,PORT,1024)
 
