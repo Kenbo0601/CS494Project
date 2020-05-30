@@ -81,10 +81,6 @@ class Server(Room):
             del self.clients[client]
             del self.addresses[client]
 
-# sends message to specific client
-    def whisper(self,client,msg):
-        if client in self.clients:
-            clients[client].send(bytes(msg))
 
 # list management functions
 
@@ -115,6 +111,13 @@ class Server(Room):
             msg += room + ','
         #sends entire message as one block
         socket.send(bytes(msg,'utf8')) #sending just room names
+
+# sends message to specific client
+    def whisper(self,client,msg):
+        print(client)
+        for k in list(self.clients):
+            if self.clients[k] == client:
+                k.send(bytes(msg,"utf8"))
 
 # creates a thread for each new connection
 
@@ -173,8 +176,7 @@ class Server(Room):
             elif msg[:6] == "{priv}":
 # doesnt work yet!
                 i = msg[7:].index('}')
-                target = msg[6:i+6] # should extract who message should go to
-                print(msg[7:i+7]) # should print out target
+                target = msg[7:i+7] # should extract who message should go to
                 msg = msg[:7] + self.clients[client] + msg[i+7:] # swap client and target names in message
                 print(msg) # should print out message with swapped target and client names
                 self.whisper(target,msg) # send message to target
@@ -190,7 +192,7 @@ class Server(Room):
                     room.broadcast(msg, name+": ")
 
 HOST = ''
-PORT = 9000
+PORT = 9009
 
 server = Server("CS494 Project",HOST,PORT,1024)
 
