@@ -81,6 +81,11 @@ class Server(Room):
             del self.clients[client]
             del self.addresses[client]
 
+# sends message to specific client
+    def whisper(self,client,msg):
+        if client in self.clients:
+            clients[client].send(bytes(msg))
+
 # list management functions
 
     def join(self,name,client):
@@ -165,6 +170,14 @@ class Server(Room):
                     room.list(client)
                 else:
                     print("%s is not in a room" % name)
+            elif msg[:6] == "{priv}":
+# doesnt work yet!
+                i = msg[6:].index('}')
+                target = msg[6:i] # should extract who message should go to
+                print(msg[6:i+1]) # should print out target
+                msg = msg[:7] + self.clients[client] + msg[i:] # swap client and target names in message
+                print(msg) # should print out message with swapped target and client names
+                self.whisper(target,msg) # send message to target
             elif msg[:6] == "{exit}": #client leaves the server, close the connection
                 client.send(bytes("{exit}", "utf8"))
                 self.remove(client)
