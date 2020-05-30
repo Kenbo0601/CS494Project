@@ -39,8 +39,11 @@ def receive():
             msg_list.insert(END," ----- Member List ----- ")
             msg_list.insert(END,tmp)
         elif msg[:6] == '{priv}':
-            tmp =  "from" + msg[6:]
-            msg_list.insert(END, tmp)
+            i = msg[7:].index('}')
+            target = msg[7:i+7] # who is this message from
+            tmp = msg[i+8:]
+            msg_list.insert(END, " ----- Private Message ----- ")
+            msg_list.insert(END, "FROM " + target + "-> " + tmp)
         elif msg[:6] == '{exit}':
             client_socket.close()
             window.quit()
@@ -80,11 +83,11 @@ def make_room():
             tkinter.messagebox.showerror("Error", "Invalid Input. Try Again")
             new_room.set("")
         elif name in room:
-            tkinter.messagebox.showerror("Error", "This room already exists.") 
+            tkinter.messagebox.showerror("Error", "This room already exists.")
             new_room.set("")
         else:
             tkinter.messagebox.showinfo("Success", "The room " + name + " has been created.")
-            client_socket.send(bytes("{make}"+name, "utf8")) 
+            client_socket.send(bytes("{make}"+name, "utf8"))
             new_room.set("") #clear the input
             newWindow.destroy()
         return
@@ -97,7 +100,7 @@ def make_room():
 
     label = Label(fm,text="Let's Create A New Room!").pack(side=TOP)
     entry = Entry(fm, textvariable=new_room).pack()
-    join = Button(fm, text="MAKE", command=make).pack(side=TOP) 
+    join = Button(fm, text="MAKE", command=make).pack(side=TOP)
     return
 
 #join rooms function
@@ -109,7 +112,7 @@ def join_room():
             tkinter.messagebox.showerror("Error", "This room does not exist, please try again.")
         else:
             client_socket.send(bytes("{join}"+name, "utf8"))
-            chat_screen() #call chat_screen 
+            chat_screen() #call chat_screen
             roomName.set("") #clear the input
             newWindow.destroy() #close the current window
         return
@@ -134,7 +137,7 @@ def join_room():
 
 #Main Chat screen
 def chat_screen():
-    msg_list.delete(0,END)  #clear all the messages 
+    msg_list.delete(0,END)  #clear all the messages
     top.deiconify()  #now the screen is visible
     return
 
@@ -145,7 +148,7 @@ def member_list():
 #leave the current room
 def leave_room():
    client_socket.send(bytes("{quit}","utf8"))
-   msg_list.delete(0,END)  #clear all the messages 
+   msg_list.delete(0,END)  #clear all the messages
    top.withdraw() #now the screen is invisible
    return
 
@@ -220,7 +223,7 @@ fm.pack()
 '''--------------- Main chat screen ---------------------'''
 top = Toplevel(window)
 top.title("ChatRoom")
-my_msg = StringVar() 
+my_msg = StringVar()
 messages_frame = Frame(top)
 my_msg = StringVar()  # For the messages to be sent.
 my_msg.set("Type your messages here.")
