@@ -38,6 +38,9 @@ def receive():
             tmp = msg[6:-1]
             msg_list.insert(END," ----- Member List ----- ")
             msg_list.insert(END,tmp)
+        elif msg[:6] == '{priv}':
+            tmp =  "from" + msg[6:]
+            msg_list.insert(END, tmp)
         elif msg[:6] == '{exit}':
             client_socket.close()
             window.quit()
@@ -56,6 +59,18 @@ def send(event=None):  # event is passed by binders.
         print("Error sending data")
         sys.exit(1)
     return
+
+
+def private_send():
+    msg = my_msg.get()
+    my_msg.set("")  # Clears input field.
+    try:
+        client_socket.send(bytes("{priv}"+msg, "utf8"))
+    except error:
+        print("Error sending data")
+        sys.exit(1)
+    return
+
 
 def make_room():
     #inner function
@@ -110,7 +125,6 @@ def join_room():
     for x in room:
         count += 1
         myList.insert(END, str(count) + ": " + x)
-        #Label(fm, text=str(count) + ": " + x, fg="blue", font=(None, 20)).pack()
 
     myList.pack(side=TOP,fill=BOTH)
     entry = Entry(fm, textvariable=roomName).pack()
@@ -212,6 +226,7 @@ my_msg = StringVar()  # For the messages to be sent.
 my_msg.set("Type your messages here.")
 scrollbar = Scrollbar(messages_frame)  # To navigate through past messages.
 # Following will contain the messages.
+member = Button(top, text="MemberList",command=member_list).pack(side=TOP)
 msg_list = Listbox(messages_frame, height=30, width=70, yscrollcommand=scrollbar.set)
 scrollbar.pack(side=RIGHT, fill=Y)
 msg_list.pack(side=LEFT, fill=BOTH)
@@ -222,12 +237,11 @@ entry_field = Entry(top, textvariable=my_msg)
 entry_field.bind("<Return>", send)
 entry_field.pack()
 send_button = Button(top, text="Send", command=send)
-member = Button(top, text="MemberList",command=member_list)
 quit_button = Button(top, text="Leave", command=leave_room)
+private = Button(top, text="PrivateMsg", command=private_send)
 send_button.pack()
-member.pack()
+private.pack()
 quit_button.pack()
-#top.protocol("WM_DELETE_WINDOW", on_closing)
 top.withdraw() #hide the chat screen
 
 window.mainloop()
