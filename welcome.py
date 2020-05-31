@@ -6,20 +6,24 @@ import tkinter.messagebox
 
 msg = ''
 room = []
-msg_list = None
+#msg_list = None
 client_socket = socket(AF_INET, SOCK_STREAM)
 BUFSIZ = 1024
 
 #Connect to the server
 def connect_server():
     name = userName.get()
-    client_socket.send(bytes(name, "utf8"))
-    main_menu()
-    logIn.config(state=DISABLED)
+    if len(name) == 0 or len(name) > 9:
+        tkinter.messagebox.showerror("Error", "Invalid Input. Try Again")
+        new_room.set("")
+    else:
+        client_socket.send(bytes(name, "utf8"))
+        main_menu()
+        logIn.config(state=DISABLED)
     return
 
+#Handles receiving of messages
 def receive():
-    """Handles receiving of messages."""
     while True:
         try:
             msg = client_socket.recv(BUFSIZ).decode("utf8")
@@ -27,24 +31,24 @@ def receive():
             print("Error receiving data")
             sys.exit(1)
         print(msg)
-        if msg[:6] == '{room}':
+        if msg[:6] == '{room}': #receiving all the rooms
             tmp = msg[6:-1] #cutting {room} + the last ','
             rm = tmp.split(',') #split rooms by , and by using split, it stores strings into a list by default
             for x in rm:
                 if not x in room: #without this, it duplicates rooms
                     if len(x) > 0:
                         room.append(x)
-        elif msg[:6] == '{memb}':
+        elif msg[:6] == '{memb}': #member list buttion
             tmp = msg[6:-1]
             msg_list.insert(END," ----- Member List ----- ")
             msg_list.insert(END,tmp)
-        elif msg[:6] == '{priv}':
+        elif msg[:6] == '{priv}': #private messages
             i = msg[7:].index('}')
             target = msg[7:i+7] # who is this message from
             tmp = msg[i+8:]
             msg_list.insert(END, " ----- Private Message ----- ")
             msg_list.insert(END, "FROM " + target + "-> " + tmp)
-        elif msg[:6] == '{exit}':
+        elif msg[:6] == '{exit}': #closing socket connection
             client_socket.close()
             window.quit()
             break
