@@ -174,7 +174,6 @@ class Server(Room):
                 else:
                     print("%s is not in a room" % name)
             elif msg[:6] == "{priv}":
-# doesnt work yet!
                 i = msg[7:].index('}')
                 target = msg[7:i+7] # should extract who message should go to
                 msg = msg[:7] + self.clients[client] + msg[i+7:] # swap client and target names in message

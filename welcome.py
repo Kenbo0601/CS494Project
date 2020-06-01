@@ -6,7 +6,6 @@ import tkinter.messagebox
 
 msg = ''
 room = []
-#msg_list = None
 client_socket = socket(AF_INET, SOCK_STREAM)
 BUFSIZ = 1024
 
@@ -83,10 +82,10 @@ def make_room():
     #inner function
     def make():
         name = new_room.get()
-        if len(name) == 0:
+        if len(name) == 0 or len(name) > 12: #character length needs to be between 1 to 12
             tkinter.messagebox.showerror("Error", "Invalid Input. Try Again")
             new_room.set("")
-        elif name in room:
+        elif name in room: #if the room already exists
             tkinter.messagebox.showerror("Error", "This room already exists.")
             new_room.set("")
         else:
