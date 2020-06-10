@@ -55,8 +55,8 @@ def receive():
             msg_list.insert(END,msg)
 
 
+#Handles sending of messages
 def send(event=None):  # event is passed by binders.
-    """Handles sending of messages."""
     msg = my_msg.get()
     my_msg.set("")  # Clears input field.
     try:
@@ -66,7 +66,7 @@ def send(event=None):  # event is passed by binders.
         sys.exit(1)
     return
 
-
+#Send private messages
 def private_send():
     msg = my_msg.get()
     my_msg.set("")  # Clears input field.
@@ -108,7 +108,7 @@ def make_room():
 
 #join rooms function
 def join_room():
-    '''inner function'''
+    #inner function
     def connect_room():
         name = roomName.get() #get rooms name
         if name not in room:
@@ -125,8 +125,8 @@ def join_room():
     fm = Frame(newWindow)
     myList= Listbox(fm, yscrollcommand=scrollbar.set)
 
-    client_socket.send(bytes("{room}", "utf8")) #request the server to send the client the list of rooms
-    time.sleep(2) #wait for 2 seconds to receive the info
+    client_socket.send(bytes("{room}", "utf8")) #send request to the server to send the client the list of rooms
+    time.sleep(2) #wait for 2 seconds to receive the message
     count = 0
     for x in room:
         count += 1
@@ -167,8 +167,8 @@ def main_menu():
     label = Label(fm,text="***** MENU *****").pack(side=TOP)
     label2 = Label(fm,text="Hi," + str(userName.get()) + ". What would you like to do?").pack()
     makeRoom = Button(fm,text='MAKE A ROOM', command=make_room).pack(side=TOP, expand=YES)
-    makeRoom = Button(fm,text='JOIN A ROOM', command=join_room).pack(side=TOP,expand=YES)
-    makeRoom = Button(fm,text='EXIT', command=quit_chatApp).pack(side=TOP,expand=YES)
+    joinRoom = Button(fm,text='JOIN A ROOM', command=join_room).pack(side=TOP,expand=YES)
+    exitApp = Button(fm,text='EXIT', command=quit_chatApp).pack(side=TOP,expand=YES)
     fm.pack(fill=BOTH)
     return
 
